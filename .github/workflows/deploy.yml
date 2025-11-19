@@ -1,53 +1,29 @@
-name: Deploy OCR App to Azure
+name: Build and Push to ACR
 
 on:
   push:
     branches:
-      - main  # or the branch you use
+      - main
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set image tag based on commit SHA
-      - name: Set image tag
-        id: vars
-        run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-
-      # 3️⃣ Log in to Azure Container Registry
-      - name: Log in to ACR
+      - name: Azure Container Registry Login
         uses: azure/docker-login@v1
         with:
-          login-server: <your_registry>.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          login-server: ${{ secrets.AZURE_ACR_LOGIN_SERVER }}
+          username: ${{ secrets.AZURE_ACR_USERNAME }}
+          password: ${{ secrets.AZURE_ACR_PASSWORD }}
 
-      # 4️⃣ Build Docker image
       - name: Build Docker image
-        run: docker build -t <your_registry>.azurecr.io/ocr-app:${{ env.IMAGE_TAG }} .
+        run: |
+          docker build -t ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v1 .
 
-      # 5️⃣ Push Docker image
       - name: Push Docker image
-        run: docker push <your_registry>.azurecr.io/ocr-app:${{ env.IMAGE_TAG }}
-
-      # 6️⃣ Deploy to Azure Container App
-      - name: Update Azure Container App
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.90.0
-          inlineScript: |
-            az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-            az containerapp update \
-              --name azeuscontappdev \
-              --resource-group <your_resource_group> \
-              --image <your_registry>.azurecr.io/ocr-app:${{ env.IMAGE_TAG }} \
-              --cpu 0.5 --memory 1.0Gi \
-              --environment-variables OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-              --image-pull-policy Always
+        run: |
+          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:latest
