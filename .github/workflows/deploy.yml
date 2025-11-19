@@ -26,4 +26,4 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:latest
+          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v1
