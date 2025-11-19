@@ -22,8 +22,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v1 .
+          docker build -t ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v2 .
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v1
+          docker push ${{ secrets.AZURE_ACR_LOGIN_SERVER }}/ocr-app:v2
